@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import * as API from './api.js'
+import { initDB } from '../DB.js'
 
 const Ctx = createContext(null)
 
@@ -11,7 +12,12 @@ export function AuthProvider({ children }) {
   // restore session on page load
   useEffect(() => {
     API.getSession()
-      .then(s => { if (s) setUser(s.user) })
+      .then(async s => { 
+        if (s) {
+          await initDB(s.user.id)
+          setUser(s.user)
+        }
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
@@ -20,6 +26,33 @@ export function AuthProvider({ children }) {
     setError('')
     try {
       const { user: u } = await API.login(username, password)
+      await initDB(u.id)
+      setUser(u)
+      return true
+    } catch (e) {
+      setError(e.message)
+      return false
+    }
+  }
+
+  const register = async (email, password, displayName) => {
+    setError('')
+    try {
+      const { user: u } = await API.register(email, password, displayName)
+      await initDB(u.id)
+      setUser(u)
+      return true
+    } catch (e) {
+      setError(e.message)
+      return false
+    }
+  }
+
+  const loginWithGoogle = async () => {
+    setError('')
+    try {
+      const { user: u } = await API.loginWithGoogle()
+      await initDB(u.id)
       setUser(u)
       return true
     } catch (e) {
@@ -36,7 +69,7 @@ export function AuthProvider({ children }) {
   return (
     <Ctx.Provider value={{
       user, loading, error, setError,
-      login, logout,
+      login, register, loginWithGoogle, logout,
       isAdmin: user?.role === 'admin',
     }}>
       {children}

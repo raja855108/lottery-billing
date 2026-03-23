@@ -2,61 +2,100 @@ import { useState } from 'react'
 import { useAuth } from './AuthContext.jsx'
 
 export default function LoginPage() {
-  const { login, error, setError, loading } = useAuth()
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [busy, setBusy]         = useState(false)
-  const [showPw, setShowPw]     = useState(false)
+  const { login, register, loginWithGoogle, error, setError } = useAuth()
+  
+  const [isRegister, setIsRegister] = useState(false)
+  const [email, setEmail]           = useState('')
+  const [password, setPassword]     = useState('')
+  const [displayName, setDisplayName] = useState('')
+  
+  const [busy, setBusy]             = useState(false)
+  const [showPw, setShowPw]         = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!username.trim() || !password) return
+    if (!email.trim() || !password) return
+    
     setBusy(true)
-    await login(username.trim(), password)
+    let ok = false
+    if (isRegister) {
+      ok = await register(email.trim(), password, displayName.trim())
+    } else {
+      ok = await login(email.trim(), password)
+    }
+    setBusy(false)
+  }
+
+  const handleGoogle = async () => {
+    setBusy(true)
+    await loginWithGoogle()
     setBusy(false)
   }
 
   const inp = {
-    width: '100%', padding: '12px 14px', borderRadius: 10,
-    border: '1.5px solid #d0d0d0', fontSize: 15,
+    width: '100%', padding: '12px 14px', borderRadius: 12,
+    border: '1.5px solid #e0e0e0', fontSize: 15,
     fontFamily: 'inherit', outline: 'none',
-    background: '#fafafa', transition: 'border-color .2s',
+    background: '#fcfcfc', transition: 'all .2s',
   }
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#1a237e 0%,#283593 50%,#1565c0 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <div className="fade-in" style={{ background: '#fff', borderRadius: 24, padding: '44px 36px 36px', width: '100%', maxWidth: 400, boxShadow: '0 32px 80px rgba(0,0,0,0.35)' }}>
+      <div className="fade-in" style={{ background: '#fff', borderRadius: 28, padding: '48px 40px 40px', width: '100%', maxWidth: 420, boxShadow: '0 32px 80px rgba(0,0,0,0.4)' }}>
+        
         {/* logo */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 56, marginBottom: 8 }}>🎲</div>
-          <h1 style={{ fontSize: '1.55em', fontWeight: 900, color: '#1a237e', letterSpacing: .5 }}>Lottery Billing</h1>
-          <p style={{ color: '#888', fontSize: 13, marginTop: 4 }}>Sign in to your account</p>
+          <div style={{ fontSize: 64, marginBottom: 12 }}>🎲</div>
+          <h1 style={{ fontSize: '1.7em', fontWeight: 950, color: '#1a237e', letterSpacing: -0.5 }}>
+            {isRegister ? 'Create Account' : 'Welcome Back'}
+          </h1>
+          <p style={{ color: '#888', fontSize: 13, marginTop: 4 }}>
+            {isRegister ? 'Join the Lottery Billing System' : 'Sign in to manage your bills'}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          {/* username */}
+          
+          {/* Display Name (Register only) */}
+          {isRegister && (
+            <div className="slide-down">
+              <label style={{ fontSize: 13, fontWeight: 700, color: '#444', display: 'block', marginBottom: 6 }}>Full Name</label>
+              <input
+                style={inp}
+                placeholder="Ex. John Doe"
+                value={displayName}
+                onChange={e => { setDisplayName(e.target.value); setError('') }}
+                disabled={busy}
+              />
+            </div>
+          )}
+
+          {/* Email / Username */}
           <div>
-            <label style={{ fontSize: 13, fontWeight: 600, color: '#555', display: 'block', marginBottom: 6 }}>Username</label>
+            <label style={{ fontSize: 13, fontWeight: 700, color: '#444', display: 'block', marginBottom: 6 }}>
+              {isRegister ? 'Email Address' : 'Email or Username'}
+            </label>
             <input
               style={inp}
-              placeholder="Enter username"
-              value={username}
+              type="text"
+              placeholder={isRegister ? "name@example.com" : "Enter email or username"}
+              value={email}
               autoComplete="username"
-              onChange={e => { setUsername(e.target.value); setError('') }}
+              onChange={e => { setEmail(e.target.value); setError('') }}
               disabled={busy}
             />
           </div>
 
-          {/* password */}
+          {/* Password */}
           <div>
-            <label style={{ fontSize: 13, fontWeight: 600, color: '#555', display: 'block', marginBottom: 6 }}>Password</label>
+            <label style={{ fontSize: 13, fontWeight: 700, color: '#444', display: 'block', marginBottom: 6 }}>Password</label>
             <div style={{ position: 'relative' }}>
               <input
                 style={{ ...inp, paddingRight: 44 }}
                 type={showPw ? 'text' : 'password'}
-                placeholder="Enter password"
+                placeholder="••••••••"
                 value={password}
-                autoComplete="current-password"
+                autoComplete={isRegister ? "new-password" : "current-password"}
                 onChange={e => { setPassword(e.target.value); setError('') }}
                 disabled={busy}
               />
@@ -70,26 +109,67 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* error */}
+          {/* Error Message */}
           {error && (
-            <div className="slide-down" style={{ background: '#ffebee', border: '1px solid #ffcdd2', borderRadius: 8, padding: '10px 14px', color: '#c62828', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
-              ⚠️ {error}
+            <div className="slide-down" style={{ background: '#fff5f5', border: '1px solid #fed7d7', borderRadius: 12, padding: '12px 14px', color: '#c53030', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 16 }}>⚠️</span> {error}
             </div>
           )}
 
-          {/* submit */}
+          {/* Submit Button */}
           <button
             type="submit"
-            disabled={busy || !username || !password}
-            style={{ background: busy ? '#9fa8da' : 'linear-gradient(135deg,#1a237e,#3949ab)', color: '#fff', border: 'none', borderRadius: 11, padding: '14px', fontSize: 15, fontWeight: 800, cursor: busy ? 'not-allowed' : 'pointer', letterSpacing: .4, marginTop: 4, boxShadow: '0 4px 16px rgba(26,35,126,0.35)', transition: 'background .2s' }}
+            disabled={busy || !email || !password}
+            style={{ 
+              background: busy ? '#9fa8da' : 'linear-gradient(135deg,#1a237e,#3949ab)', 
+              color: '#fff', border: 'none', borderRadius: 14, padding: '15px', 
+              fontSize: 16, fontWeight: 800, cursor: busy ? 'not-allowed' : 'pointer', 
+              letterSpacing: 0.5, marginTop: 6, boxShadow: '0 8px 20px rgba(26,35,126,0.25)', 
+              transition: 'all .2s', transform: busy ? 'scale(0.98)' : 'none'
+            }}
           >
-            {busy ? '⏳ Signing in…' : '🔐 Sign In'}
+            {busy ? 'Processing...' : isRegister ? '🚀 Create Account' : '🔐 Sign In'}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: 22, fontSize: 12, color: '#bbb' }}>
-          Contact your administrator to get access
+        {/* Divider */}
+        <div style={{ display: 'flex', alignItems: 'center', margin: '24px 0', gap: 12 }}>
+          <div style={{ flex: 1, height: 1, background: '#eee' }} />
+          <span style={{ fontSize: 12, color: '#aaa', fontWeight: 600, textTransform: 'uppercase' }}>OR</span>
+          <div style={{ flex: 1, height: 1, background: '#eee' }} />
+        </div>
+
+        {/* Google Login */}
+        <button
+          type="button"
+          onClick={handleGoogle}
+          disabled={busy}
+          style={{ 
+            width: '100%', background: '#fff', color: '#444', 
+            border: '1.5px solid #e0e0e0', borderRadius: 14, padding: '13px', 
+            fontSize: 15, fontWeight: 700, cursor: busy ? 'not-allowed' : 'pointer', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+            transition: 'all .2s', boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+          }}
+          onMouseOver={e => e.currentTarget.style.background = '#f9f9f9'}
+          onMouseOut={e => e.currentTarget.style.background = '#fff'}
+        >
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="G" />
+          Continue with Google
+        </button>
+
+        {/* Toggle Mode */}
+        <p style={{ textAlign: 'center', marginTop: 28, fontSize: 14, color: '#666' }}>
+          {isRegister ? 'Already have an account?' : "Don't have an account?"}
+          <button 
+            type="button"
+            onClick={() => { setIsRegister(!isRegister); setError('') }}
+            style={{ background: 'none', border: 'none', color: '#1565c0', fontWeight: 800, cursor: 'pointer', marginLeft: 6, textDecoration: 'underline' }}
+          >
+            {isRegister ? 'Sign In' : 'Register Now'}
+          </button>
         </p>
+
       </div>
     </div>
   )
