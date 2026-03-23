@@ -1,0 +1,81 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: #eef0f5;
+  color: #111;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Input number arrows hidden for cleaner look */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
+
+/* Fade-in for cards */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeIn 0.22s ease-out; }
+
+/* Slide-down for dropdowns */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.slide-down { animation: slideDown 0.18s ease-out; }
+
+/* Pulse for bill total highlight */
+@keyframes pulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+.pulse { animation: pulse 0.35s ease-in-out; }
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f5f5f5; }
+::-webkit-scrollbar-thumb { background: #c5c5c5; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  body { font-size: 14px; }
+}
+
+/* ── PART 3: Print-color-adjust — preserves gradients/colors in all browsers ── */
+@media print {
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust:         exact !important;
+    color-adjust:               exact !important;
+  }
+  body {
+    background: #fff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust:         exact !important;
+  }
+  .report-header {
+    background: linear-gradient(135deg,#1e3a8a,#4f46e5) !important;
+    color: white !important;
+    padding: 20px !important;
+    border-radius: 10px !important;
+  }
+  th {
+    background: #1e3a8a !important;
+    color: white !important;
+  }
+  .running-bill {
+    background: #e0f2fe !important;
+    padding: 10px !important;
+    border-radius: 8px !important;
+    font-weight: bold !important;
+  }
+  .customer-block {
+    page-break-inside: avoid !important;
+  }
+}
