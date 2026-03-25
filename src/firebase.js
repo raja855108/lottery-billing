@@ -11,11 +11,18 @@ export const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Check if config is valid (at least API Key must exist)
+export const isConfigValid = !!firebaseConfig.apiKey;
 
-// Initialize Services
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+if (!isConfigValid) {
+  console.error("❌ Firebase Configuration is missing! Check your .env file or Netlify environment variables.");
+}
+
+// Initialize Firebase safely
+const app = isConfigValid ? initializeApp(firebaseConfig) : null;
+
+// Initialize Services safely
+export const auth = app ? getAuth(app) : null;
+export const db = app ? getFirestore(app) : null;
 
 export default app;

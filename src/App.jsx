@@ -39,7 +39,7 @@ const TABS = [
 ]
 
 export default function App() {
-  const { user, loading } = useAuth()
+  const { user, loading, error } = useAuth()
   if (loading) return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center',
                   justifyContent:'center', background:'linear-gradient(135deg,#1a237e,#3949ab)' }}>
@@ -49,6 +49,25 @@ export default function App() {
       </div>
     </div>
   )
+
+  if (error && error.includes("Firebase not configured")) {
+    return (
+      <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#f8d7da', padding:20 }}>
+        <div style={{ maxWidth:500, background:'#fff', padding:30, borderRadius:16, boxShadow:'0 10px 40px rgba(0,0,0,0.1)', textAlign:'center' }}>
+          <div style={{ fontSize:60, marginBottom:20 }}>⚠️</div>
+          <h2 style={{ color:'#721c24', marginBottom:15 }}>Configuration Required</h2>
+          <p style={{ color:'#555', lineHeight:1.6, marginBottom:20 }}>
+            The application is missing technical configuration (Firebase API Keys). 
+            If you are the developer, please ensure your environment variables are set in the Netlify dashboard.
+          </p>
+          <div style={{ background:'#f8f9fa', padding:15, borderRadius:8, textAlign:'left', fontSize:13, fontFamily:'monospace' }}>
+            Required: VITE_FIREBASE_API_KEY, etc.
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (!user) return <LoginPage />
   return <BillingApp />
 }
