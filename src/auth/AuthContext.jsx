@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import * as API from './api.js'
 import { initDB } from '../DB.js'
-import { isConfigValid } from '../firebase'
 
 const Ctx = createContext(null)
 
@@ -12,11 +11,6 @@ export function AuthProvider({ children }) {
 
   // restore session on page load
   useEffect(() => {
-    if (!isConfigValid) {
-      setError("Firebase not configured. Please check your environment variables.")
-      setLoading(false)
-      return
-    }
     API.getSession()
       .then(async s => { 
         if (s) {
